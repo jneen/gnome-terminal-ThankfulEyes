@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
+# if there's a better way to use gconf, plz let me know.
+
 [[ -z "$PROFILE_NAME" ]] && PROFILE_NAME="Thankful Eyes"
-[[ -z "$PROFILE_SLUG" ]] && PROFILE_SLUG="Default"
+[[ -z "$PROFILE_SLUG" ]] && PROFILE_SLUG="ThankfulEyes"
 [[ -z "$GCONFTOOL" ]] && GCONFTOOL=gconftool
 [[ -z "$BASE_KEY" ]] && BASE_KEY="/apps/gnome-terminal/profiles"
 
@@ -53,6 +55,24 @@ palette() {
     echo $aluminium1
   } | head -c-1 | tr "\n" :
 }
+
+# because gconftool doesn't have "append"
+glist_append() {
+  local type="$1"; shift
+  local key="$1"; shift
+  local val="$1"; shift
+
+  local entries="$(
+    {
+      gconftool -g "$key" | tr -d '[]' | tr , "\n" | fgrep -v "$val"
+      echo "$val"
+    } | head -c-1 | tr "\n" ,
+  )"
+
+  gconftool -s --type list --list-type $type "$key" "[$entries]"
+}
+
+glist_append string /apps/gnome-terminal/global/profile_list "$PROFILE_SLUG"
 
 gset string visible_name "$PROFILE_NAME"
 
