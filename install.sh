@@ -37,11 +37,11 @@ black='#000000'
 palette() {
   {
     echo $slate_blue
-    echo $pink_merengue
+    echo $scarletred2
     echo $go_get_it
     echo $schrill
     echo $chilly
-    echo $dune
+    echo $pink_merengue
     echo $eggshell_cloud
     echo $unicorn
 
@@ -50,7 +50,7 @@ palette() {
     echo $go_get_it
     echo $butter3
     echo $backlit
-    echo $sandy
+    echo $pink_merengue
     echo $cool_as_ice
     echo $aluminium1
   } | head -c-1 | tr "\n" :
