@@ -5,26 +5,31 @@
 [[ -z "$PROFILE_NAME" ]] && PROFILE_NAME="Thankful Eyes"
 [[ -z "$PROFILE_SLUG" ]] && PROFILE_SLUG="ThankfulEyes"
 [[ -z "$GCONFTOOL" ]] && GCONFTOOL=gconftool
-[[ -z "$BASE_KEY" ]] && BASE_KEY="/apps/gnome-terminal/profiles"
+[[ -z "$BASE_KEY" ]] && BASE_KEY="/org/gnome/terminal/legacy/profiles:"
 
-PROFILE_KEY="$BASE_KEY/$PROFILE_SLUG"
+PROFILE_UUID="$(uuidgen)"
+PROFILE_KEY="$BASE_KEY/:$PROFILE_UUID"
 
-gset() {
-  local type="$1"; shift
+gconftool() { gconftool-2 "$@" ;}
+
+dset() {
   local key="$1"; shift
   local val="$1"; shift
 
-  "$GCONFTOOL" --type "$type" --set "$PROFILE_KEY/$key" -- "$val"
+  echo dconf write "$PROFILE_KEY"/"$key" "$val" >&2
+  dconf write "$PROFILE_KEY"/"$key" "$val"
 }
 
 cool_as_ice='#6c8b9f'
 slate_blue='#4e5d62'
+pool='#4dc5c0'
 eggshell_cloud='#dee5e7'
 krasna='#122b3b'
 aluminium1='#fefeec'
 scarletred2='#cc0000'
 butter3='#c4a000'
 go_get_it='#b2fd6d' # green
+dragon='#38C46D'
 chilly='#a8e1fe'
 unicorn='#faf6e4'
 sandy='#f6dd62' # light yellow
@@ -32,99 +37,87 @@ pink_merengue='#f696db' # pink
 dune='#fff0a6' # super-light yellow
 backlit='#4df4ff' # light blue
 schrill='#ffb000' # rich yellow
+rose='#ffcfdb'
 black='#000000'
 
 palette() {
+  echo -n '['
   {
-    echo $slate_blue
-    echo $scarletred2
-    echo $go_get_it
-    echo $schrill
-    echo $chilly
-    echo $pink_merengue
-    echo $eggshell_cloud
-    echo $unicorn
-
     echo $black
     echo $scarletred2
-    echo $go_get_it
+    echo $dragon
     echo $butter3
-    echo $backlit
-    echo $pink_merengue
     echo $cool_as_ice
-    echo $aluminium1
-  } | head -c-1 | tr "\n" :
+    echo $pink_merengue
+    echo $pool
+    echo $unicorn
+
+    echo $slate_blue
+    echo $schrill
+    echo $go_get_it
+    echo $sandy
+    echo $chilly
+    echo $rose
+    echo $backlit
+    echo $dune
+  } | sed -E "s/^(.*)$/'\\1'/" | head -c-1 | tr "\n" ,
+  echo -n ']'
 }
 
-# because gconftool doesn't have "append"
-glist_append() {
-  local type="$1"; shift
-  local key="$1"; shift
-  local val="$1"; shift
+dconf write "$BASE_KEY"/default "'$PROFILE_UUID'"
+dconf write "$BASE_KEY"/list "['$PROFILE_UUID']"
 
-  local entries="$(
-    {
-      gconftool -g "$key" | tr -d '[]' | tr , "\n" | fgrep -v "$val"
-      echo "$val"
-    } | head -c-1 | tr "\n" ,
-  )"
+dset visible-name "'$PROFILE_NAME'"
 
-  gconftool -s --type list --list-type $type "$key" "[$entries]"
-}
+dset palette "$(palette)"
+dset background-color "'$krasna'"
+dset bold-color-same-as-fg false
+dset bold-color "'$unicorn'"
+dset foreground-color "'$eggshell_cloud'"
+dset background-darkness 0.5
+dset background-type "'solid'"
+dset use-theme-colors false
 
-glist_append string /apps/gnome-terminal/global/profile_list "$PROFILE_SLUG"
+dset default-show-menubar false
+dset title "'Terminal'"
+dset use-custom-default-size true
+dset default-size-columns 80
 
-gset string visible_name "$PROFILE_NAME"
+dset use-system-font false
+dset font "'Ubuntu Mono 14'"
+dset allow-bold true
 
-gset string palette "$(palette)"
-gset string background_color $krasna
-gset string bold_color_same_as_fg false
-gset string bold_color $unicorn
-gset string foreground_color $eggshell_cloud
-gset float  background_darkness 0.5
-gset string background_type solid
-gset bool   use_theme_colors false
+dset backspace-binding "'ascii-del'"
+dset delete-binding "'escape-sequence'"
 
-gset bool   default_show_menubar false
-gset string title Terminal
-gset bool   use_custom_default_size true
-gset int    default_size_columns 80
+dset silent-bell false
 
-gset bool   use_system_font false
-gset string font "Ubuntu Mono 14"
-gset bool   allow_bold true
+dset exit-action "'close'"
 
-gset string backspace_binding ascii-del
-gset string delete_binding escape-sequence
-
-gset bool   silent_bell false
-
-gset string exit_action close
-
-gset bool   scroll_on_keystroke true
-gset bool   scroll_background true
-gset bool   scrollback_lines 1024
-gset string scrollbar_position right
-gset bool   alternate_screen_scroll true
-gset bool   scroll_on_output false
-gset bool   scrollback_unlimited true
+dset scroll-on-keystroke true
+dset scroll-background true
+dset scrollback-lines 1024
+dset scrollbar-position "'right'"
+dset alternate-screen-scroll true
+dset scroll-on-output false
+dset scrollback-unlimited true
 
 
-gset bool   use_custom_command false
-gset string custom_command ''
+dset use-custom-command false
+dset custom-command "''"
 
 
-gset string title_mode replace
+dset title-mode "'replace'"
 
 
-gset string background_image ''
-gset string default_size_rows 24
+dset background-image "''"
+dset default-size-rows 24
 
 
-gset string cursor_blink_mode system
-gset string cursor_shape block
+dset cursor-blink-mode "'system'"
+dset cursor-shape "'block'"
 
-gset bool   login_shell false
-gset bool   update_records true
-gset string word_chars '-A-Za-z0-9,./?%&#:_=+@~'
+dset login-shell false
+dset update-records true
+dset word-chars \''-A-Za-z0-9,./?%&#:-=+@~'\'
 
